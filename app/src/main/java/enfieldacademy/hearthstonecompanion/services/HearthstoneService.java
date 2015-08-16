@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -17,21 +18,24 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import enfieldacademy.hearthstonecompanion.data.HearthstoneContract.CardEntry;
 import enfieldacademy.hearthstonecompanion.fragments.MainActivityFragment;
 import enfieldacademy.hearthstonecompanion.models.HearthstoneCard;
+import enfieldacademy.hearthstonecompanion.models.HearthstoneCardDeserializer;
 
 public class HearthstoneService {
 
-    private final String TAG = "HearthstoneService";
-    private final String BASE_URL = "https://omgvamp-hearthstone-v1.p.mashape.com";
-    private final String ALL_CARDS = "/cards";
+    private static final String TAG = "HearthstoneService";
+    private static final String BASE_URL = "https://omgvamp-hearthstone-v1.p.mashape.com";
+    private static final String ALL_CARDS = "/cards";
 
+    private List<HearthstoneCard> hearthstoneCards = new ArrayList<>();
+    private MainActivityFragment.CardAdapter adapter;
     private HttpURLConnection connection;
     private InputStream inputStream;
 
-    public static List<HearthstoneCard> allHearthstoneCards;
-
-    public HearthstoneService(){
+    public HearthstoneService(MainActivityFragment.CardAdapter adapter){
+        this.adapter = adapter;
         establishEndpoint(ALL_CARDS);
         performQueryToServer();
     }
@@ -52,30 +56,24 @@ public class HearthstoneService {
     }
 
     private void processResponse(String response){
-        allHearthstoneCards = new ArrayList<>();
 
         try {
             JSONObject object = new JSONObject(response);
-            Log.d(TAG, "object.length() = " + object.length());
 
             for(int i = 0; i < object.length(); i++){
                 JSONArray array = object.getJSONArray(getJSONArrayName(i));
                 for(int j = 0; j < array.length(); j++){
                     JSONObject card = array.getJSONObject(j);
-                    //Log.d(TAG, "Card " + j + ": " + card.toString());
-                    Log.d(TAG, "==============================================================================");
-                    HearthstoneCard h = new HearthstoneCard();
-                    Log.d(TAG, "card.getString(\"name\") = " + card.getString("name"));
-                    h.setName(card.getString("name"));
-                    Log.d(TAG, "h.getName() = " + h.getName());
-                    allHearthstoneCards.add(h);
+                    HearthstoneCardDeserializer deserializer = new HearthstoneCardDeserializer(card);
+                    HearthstoneCard h = deserializer.getCard();
+                    hearthstoneCards.add(h);
                 }
             }
+            adapter.hearthstoneCards = hearthstoneCards;
+            adapter.notifyDataSetChanged();
         } catch (Exception e){
             e.printStackTrace();
         }
-
-        MainActivityFragment.exampleListView.setAdapter(MainActivityFragment.adapter);
     }
 
     private void populateInternalDatabase(){
@@ -119,7 +117,7 @@ public class HearthstoneService {
         task.execute();
     }
 
-    public String getJSONArrayName(int position){
+    private String getJSONArrayName(int position){
         switch(position){
             case 0:
                 return "Basic";

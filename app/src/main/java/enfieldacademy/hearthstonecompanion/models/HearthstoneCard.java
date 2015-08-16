@@ -22,6 +22,9 @@ public class HearthstoneCard {
     String image;
     String imageGold;
     String locale;
+    int numberOwned;
+    byte[] imageBlob;
+    byte[] imageBlobGold;
 
     public HearthstoneCard(){
     }
@@ -184,5 +187,29 @@ public class HearthstoneCard {
 
     public void setLocale(String locale) {
         this.locale = locale;
+    }
+
+    public int getNumberOwned(){
+        return numberOwned;
+    }
+
+    public void setNumberOwned(int numberOwned){
+        this.numberOwned = numberOwned;
+    }
+
+    public byte[] getImageBlob(){
+        return imageBlob;
+    }
+
+    public void setImageBlob(byte[] imageBlob){
+        this.imageBlob = imageBlob;
+    }
+
+    public byte[] getImageBlobGold(){
+        return imageBlobGold;
+    }
+
+    public void setImageBlobGold(byte[] imageBlobGold){
+        this.imageBlobGold = imageBlobGold;
     }
 }
