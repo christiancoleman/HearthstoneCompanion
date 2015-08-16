@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -29,8 +28,6 @@ public class MainActivityFragment extends Fragment {
 
     private final String TAG = "MainActivityFragment";
 
-    private List<HearthstoneCard> hearthstoneCards;
-
     HearthstoneService service;
 
     public MainActivityFragment() {
@@ -42,7 +39,7 @@ public class MainActivityFragment extends Fragment {
 
         View parentView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        hearthstoneCards = new ArrayList<>();
+        List<HearthstoneCard> hearthstoneCards = new ArrayList<>();
         CardAdapter adapter = new CardAdapter(hearthstoneCards);
         GridView cardView = (GridView) parentView.findViewById(R.id.exampleList);
         cardView.setAdapter(adapter);

@@ -1,15 +1,10 @@
 package enfieldacademy.hearthstonecompanion.models;
 
+import android.database.Cursor;
 import android.util.Log;
 
-import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 
 import enfieldacademy.hearthstonecompanion.data.HearthstoneContract.CardEntry;
 
@@ -160,8 +155,61 @@ public class HearthstoneCardDeserializer{
 
     }
 
+    public HearthstoneCardDeserializer(Cursor card){
+
+        h = new HearthstoneCard();
+
+        h.setCardId(card.getString(card.getColumnIndex(CardEntry.COLUMN_CUSTOM_ID)));
+
+        h.setName(card.getString(card.getColumnIndex(CardEntry.COLUMN_NAME)));
+
+        h.setCardSet(card.getString(card.getColumnIndex(CardEntry.COLUMN_CARD_SET)));
+
+        h.setType(card.getString(card.getColumnIndex(CardEntry.COLUMN_TYPE)));
+
+        h.setFaction(card.getString(card.getColumnIndex(CardEntry.COLUMN_FACTION)));
+
+        h.setRarity(card.getString(card.getColumnIndex(CardEntry.COLUMN_RARITY)));
+
+        h.setCost(card.getInt(card.getColumnIndex(CardEntry.COLUMN_COST)));
+
+        h.setAttack(card.getInt(card.getColumnIndex(CardEntry.COLUMN_ATTACK)));
+
+        h.setHealth(card.getInt(card.getColumnIndex(CardEntry.COLUMN_HEALTH)));
+
+        h.setDurability(card.getString(card.getColumnIndex(CardEntry.COLUMN_DURABILITY)));
+
+        h.setText(card.getString(card.getColumnIndex(CardEntry.COLUMN_TEXT)));
+
+        h.setFlavor(card.getString(card.getColumnIndex(CardEntry.COLUMN_FLAVOR)));
+
+        h.setArtist(card.getString(card.getColumnIndex(CardEntry.COLUMN_ARTIST)));
+
+        boolean collectible = convertIntToBoolean(card.getInt(card.getColumnIndex(CardEntry.COLUMN_COLLECTIBLE)));
+        h.setCollectible(collectible);
+
+        h.setPlayerClass(card.getString(card.getColumnIndex(CardEntry.COLUMN_PLAYER_CLASS)));
+
+        h.setHowToGet(card.getString(card.getColumnIndex(CardEntry.COLUMN_HOW_TO_GET)));
+
+        h.setImage(card.getString(card.getColumnIndex(CardEntry.COLUMN_IMAGE)));
+
+        h.setImageGold(card.getString(card.getColumnIndex(CardEntry.COLUMN_IMAGE_GOLD)));
+
+        h.setLocale(card.getString(card.getColumnIndex(CardEntry.COLUMN_LOCALE)));
+
+    }
+
     public HearthstoneCard getCard() {
         return h;
+    }
+
+    private boolean convertIntToBoolean(int i){
+        if(i == 0){
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }

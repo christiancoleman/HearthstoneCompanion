@@ -1,5 +1,6 @@
 package enfieldacademy.hearthstonecompanion.services;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -18,6 +19,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import enfieldacademy.hearthstonecompanion.MyApplicationConstants;
 import enfieldacademy.hearthstonecompanion.data.HearthstoneDbHelper;
 import enfieldacademy.hearthstonecompanion.fragments.MainActivityFragment;
 import enfieldacademy.hearthstonecompanion.models.HearthstoneCard;
@@ -33,13 +35,47 @@ public class HearthstoneService {
     private List<HearthstoneCard> hearthstoneCards = new ArrayList<>();
     private MainActivityFragment.CardAdapter adapter;
     private HttpURLConnection connection;
-    private InputStream inputStream;
+    private ProgressDialog progressDialog;
 
-    public HearthstoneService(Context context, MainActivityFragment.CardAdapter adapter){
+    public HearthstoneService(final Context context, MainActivityFragment.CardAdapter adapter){
         this.context = context;
         this.adapter = adapter;
-        establishEndpoint(ALL_CARDS);
-        performQueryToServer();
+        AsyncTask<Void, Void, Void> checkDB = new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                progressDialog = ProgressDialog.show(context, "Please wait", "Checking database...");
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                hearthstoneCards = getCardsFromDatabase();
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                progressDialog.dismiss();
+                if(hearthstoneCards.isEmpty()) {
+                    Log.d(TAG, "######### --- Querying web server...");
+                    establishEndpoint(ALL_CARDS);
+                    performQueryToServer();
+                } else {
+                    Log.d(TAG, "######### --- Using internal database...");
+                    updateGridView();
+                }
+            }
+
+        };
+        checkDB.execute();
+    }
+
+    private List<HearthstoneCard> getCardsFromDatabase(){
+        HearthstoneDbHelper dbHelper = new HearthstoneDbHelper(context);
+        hearthstoneCards = dbHelper.getCardBase();
+        return hearthstoneCards;
     }
 
     private void establishEndpoint(String query){
@@ -62,6 +98,12 @@ public class HearthstoneService {
         AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
 
             @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                progressDialog = ProgressDialog.show(context, "Please wait", "Downloading cards...");
+            }
+
+            @Override
             protected String doInBackground(Void... params) {
                 return createJSONString();
             }
@@ -69,6 +111,7 @@ public class HearthstoneService {
             @Override
             protected void onPostExecute(String response) {
                 super.onPostExecute(response);
+                progressDialog.dismiss();
                 processResponse(response);
             }
 
@@ -79,7 +122,7 @@ public class HearthstoneService {
     private String createJSONString(){
         String response = "";
         try {
-            inputStream = new BufferedInputStream(connection.getInputStream());
+            InputStream inputStream = new BufferedInputStream(connection.getInputStream());
             BufferedReader r = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder total = new StringBuilder();
             String line;
@@ -99,6 +142,12 @@ public class HearthstoneService {
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
 
             @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                progressDialog = ProgressDialog.show(context, "Please wait", "Downloading images...");
+            }
+
+            @Override
             protected Void doInBackground(Void... params) {
                 parseCardsFromResponse(response);
                 populateInternalDatabase();
@@ -108,6 +157,7 @@ public class HearthstoneService {
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
+                progressDialog.dismiss();
                 updateGridView();
             }
 
@@ -120,7 +170,7 @@ public class HearthstoneService {
             JSONObject object = new JSONObject(response);
 
             for(int i = 0; i < object.length(); i++){
-                JSONArray array = object.getJSONArray(getJSONArrayName(i));
+                JSONArray array = object.getJSONArray(MyApplicationConstants.getJSONArrayName(i));
                 for(int j = 0; j < array.length(); j++){
                     JSONObject card = array.getJSONObject(j);
                     HearthstoneCardDeserializer deserializer = new HearthstoneCardDeserializer(card);
@@ -136,45 +186,12 @@ public class HearthstoneService {
     private void populateInternalDatabase(){
         HearthstoneDbHelper dbHelper = new HearthstoneDbHelper(context);
         dbHelper.createCardBase(hearthstoneCards);
+        dbHelper.close();
     }
 
     private void updateGridView(){
         adapter.hearthstoneCards = hearthstoneCards;
         adapter.notifyDataSetChanged();
-    }
-
-
-    private String getJSONArrayName(int position){
-        switch(position){
-            case 0:
-                return "Basic";
-            case 1:
-                return "Classic";
-            case 2:
-                return "Credits";
-            case 3:
-                return "Naxxramas";
-            case 4:
-                return "Debug";
-            case 5:
-                return "Goblins vs Gnomes";
-            case 6:
-                return "Missions";
-            case 7:
-                return "Promotion";
-            case 8:
-                return "Reward";
-            case 9:
-                return "System";
-            case 10:
-                return "Blackrock Mountain";
-            case 11:
-                return "Hero Skins";
-            case 12:
-                return "Tavern Brawl";
-            default:
-                return "Basic";
-        }
     }
 
 }

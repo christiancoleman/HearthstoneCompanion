@@ -2,6 +2,7 @@ package enfieldacademy.hearthstonecompanion.data;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import enfieldacademy.hearthstonecompanion.data.HearthstoneContract.CardEntry;
 import enfieldacademy.hearthstonecompanion.models.HearthstoneCard;
+import enfieldacademy.hearthstonecompanion.models.HearthstoneCardDeserializer;
 
 public class HearthstoneDbHelper extends SQLiteOpenHelper{
 
@@ -109,4 +111,31 @@ public class HearthstoneDbHelper extends SQLiteOpenHelper{
         db.close();
 
     }
+
+    public List<HearthstoneCard> getCardBase(){
+
+        List<HearthstoneCard> hearthstoneCards = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + CardEntry.TABLE_NAME;
+        Cursor cursor = db.rawQuery(query, null);
+        HearthstoneCard card;
+
+        if(cursor.moveToFirst()){
+
+            do {
+
+                HearthstoneCardDeserializer deserializer = new HearthstoneCardDeserializer(cursor);
+                card = deserializer.getCard();
+                hearthstoneCards.add(card);
+
+            } while (cursor.moveToNext());
+
+        }
+
+        cursor.close();
+
+        return hearthstoneCards;
+
+    }
+
 }

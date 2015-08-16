@@ -10,7 +10,7 @@
         android:layout_width="130dp"
         android:layout_height="130dp"
         android:id="@+id/card_image"
-        fresco:placeholderImage="@drawable/classic_pack"
+        fresco:placeholderImage="@drawable/card_back_legend"
         fresco:actualImageScaleType="fitCenter"/>
 
     <TextView
@@ -18,7 +18,8 @@
         android:layout_height="25dp"
         android:id="@+id/card_name"
         android:layout_margin="10dp"
-        android:textSize="@dimen/abc_text_size_small_material"
-        android:text="@string/placeholder_text"/>
+        android:text="@string/placeholder_text"
+        android:singleLine="true"
+        android:ellipsize="marquee"/>
 
 </LinearLayout>
