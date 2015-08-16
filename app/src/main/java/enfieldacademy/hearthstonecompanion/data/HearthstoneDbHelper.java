@@ -70,14 +70,14 @@ public class HearthstoneDbHelper extends SQLiteOpenHelper{
     public void createCardBase(List<HearthstoneCard> hearthstoneCards){
 
         Log.d(TAG, "createCardBase entered");
-        int counter = 1;
+        //int counter = 1;
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         for(HearthstoneCard card : hearthstoneCards){
 
-            Log.d(TAG, "counter = " + counter);
-            counter++;
+            //Log.d(TAG, "counter = " + counter);
+            //counter++;
 
             ContentValues values = new ContentValues();
 

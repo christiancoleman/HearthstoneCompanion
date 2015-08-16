@@ -1,7 +1,7 @@
 package enfieldacademy.hearthstonecompanion.fragments;
 
 import android.app.Activity;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,7 +13,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,9 +92,8 @@ public class MainActivityFragment extends Fragment {
             }
 
             TextView nameTV = (TextView) convertView.findViewById(R.id.card_name);
-            ImageView imageIV = (ImageView) convertView.findViewById(R.id.card_image);
 
-            if(nameTV == null || imageIV == null) return null;
+            if(nameTV == null) return null;
 
             String cardName = hearthstoneCards.get(position).getName();
             String cardImage = hearthstoneCards.get(position).getImage();
@@ -102,11 +101,9 @@ public class MainActivityFragment extends Fragment {
             nameTV.setText(cardName);
 
             if(cardImage == null || cardImage.equals("")) return convertView;
-            Picasso.with(getActivity())
-                    .load(cardImage)
-                    .resize(246, 372)
-                    .centerCrop()
-                    .into(imageIV);
+            Uri uri = Uri.parse(cardImage);
+            SimpleDraweeView draweeView = (SimpleDraweeView) convertView.findViewById(R.id.card_image);
+            draweeView.setImageURI(uri);
 
             return convertView;
         }
