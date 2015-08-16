@@ -15,7 +15,7 @@ import enfieldacademy.hearthstonecompanion.models.HearthstoneCard;
 public class HearthstoneDbHelper extends SQLiteOpenHelper{
 
     private static final String TAG = "HearthstoneDbHelper";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     static final String DATABASE_NAME = "hearthstone.db";
 
@@ -48,9 +48,7 @@ public class HearthstoneDbHelper extends SQLiteOpenHelper{
                 CardEntry.COLUMN_IMAGE + " TEXT, " +
                 CardEntry.COLUMN_IMAGE_GOLD + " TEXT, " +
                 CardEntry.COLUMN_LOCALE + " TEXT, " +
-                CardEntry.COLUMN_NUMBER_OWNED + " TEXT, " +
-                CardEntry.COLUMN_IMAGE_BLOB + " BLOB, " +
-                CardEntry.COLUMN_IMAGE_BLOB_GOLD + " BLOB" +
+                CardEntry.COLUMN_NUMBER_OWNED + " TEXT" +
                 ");";
 
         db.execSQL(SQL_CREATE_LOCATION_TABLE);
@@ -103,10 +101,8 @@ public class HearthstoneDbHelper extends SQLiteOpenHelper{
             values.put(CardEntry.COLUMN_IMAGE_GOLD, card.getImageGold());
             values.put(CardEntry.COLUMN_LOCALE, card.getLocale());
             values.put(CardEntry.COLUMN_NUMBER_OWNED, card.getNumberOwned());
-            values.put(CardEntry.COLUMN_IMAGE_BLOB, card.getImageBlob());
-            values.put(CardEntry.COLUMN_IMAGE_BLOB_GOLD, card.getImageBlobGold());
 
-            db.insert(CardEntry.TABLE_NAME, null, values);
+            db.insertWithOnConflict(CardEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
         }
 

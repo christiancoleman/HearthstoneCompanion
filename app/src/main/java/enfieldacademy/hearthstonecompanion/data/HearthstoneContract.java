@@ -82,10 +82,6 @@ public class HearthstoneContract {
         public static final String COLUMN_LOCALE = "locale";
 
         public static final String COLUMN_NUMBER_OWNED = "numberOwned";
-
-        public static final String COLUMN_IMAGE_BLOB = "imgBlob";
-
-        public static final String COLUMN_IMAGE_BLOB_GOLD = "imgBlobGold";
     }
 
 }

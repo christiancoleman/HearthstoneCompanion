@@ -1,10 +1,10 @@
 package enfieldacademy.hearthstonecompanion.services;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -18,7 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import enfieldacademy.hearthstonecompanion.data.HearthstoneContract.CardEntry;
+import enfieldacademy.hearthstonecompanion.data.HearthstoneDbHelper;
 import enfieldacademy.hearthstonecompanion.fragments.MainActivityFragment;
 import enfieldacademy.hearthstonecompanion.models.HearthstoneCard;
 import enfieldacademy.hearthstonecompanion.models.HearthstoneCardDeserializer;
@@ -29,12 +29,14 @@ public class HearthstoneService {
     private static final String BASE_URL = "https://omgvamp-hearthstone-v1.p.mashape.com";
     private static final String ALL_CARDS = "/cards";
 
+    private Context context;
     private List<HearthstoneCard> hearthstoneCards = new ArrayList<>();
     private MainActivityFragment.CardAdapter adapter;
     private HttpURLConnection connection;
     private InputStream inputStream;
 
-    public HearthstoneService(MainActivityFragment.CardAdapter adapter){
+    public HearthstoneService(Context context, MainActivityFragment.CardAdapter adapter){
+        this.context = context;
         this.adapter = adapter;
         establishEndpoint(ALL_CARDS);
         performQueryToServer();
@@ -55,8 +57,65 @@ public class HearthstoneService {
         }
     }
 
-    private void processResponse(String response){
+    // returns JSON string response from server
+    private void performQueryToServer(){
+        AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
 
+            @Override
+            protected String doInBackground(Void... params) {
+                return createJSONString();
+            }
+
+            @Override
+            protected void onPostExecute(String response) {
+                super.onPostExecute(response);
+                processResponse(response);
+            }
+
+        };
+        task.execute();
+    }
+
+    private String createJSONString(){
+        String response = "";
+        try {
+            inputStream = new BufferedInputStream(connection.getInputStream());
+            BufferedReader r = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder total = new StringBuilder();
+            String line;
+            while ((line = r.readLine()) != null) {
+                total.append(line);
+            }
+            response = total.toString();
+        } catch(Exception e){
+            Log.e(TAG, "Exception in getAllHearthstoneCards() - " + e.toString());
+        } finally {
+            connection.disconnect();
+        }
+        return response;
+    }
+
+    private void processResponse(final String response){
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                parseCardsFromResponse(response);
+                populateInternalDatabase();
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                updateGridView();
+            }
+
+        };
+        task.execute();
+    }
+
+    private void parseCardsFromResponse(String response){
         try {
             JSONObject object = new JSONObject(response);
 
@@ -69,53 +128,21 @@ public class HearthstoneService {
                     hearthstoneCards.add(h);
                 }
             }
-            adapter.hearthstoneCards = hearthstoneCards;
-            adapter.notifyDataSetChanged();
         } catch (Exception e){
             e.printStackTrace();
         }
     }
 
     private void populateInternalDatabase(){
-
+        HearthstoneDbHelper dbHelper = new HearthstoneDbHelper(context);
+        dbHelper.createCardBase(hearthstoneCards);
     }
 
-    // returns JSON string response from server
-    private void performQueryToServer(){
-        AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
-
-            @Override
-            protected String doInBackground(Void... params) {
-                String response = "";
-                try {
-                    inputStream = new BufferedInputStream(connection.getInputStream());
-                    BufferedReader r = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder total = new StringBuilder();
-                    String line;
-                    while ((line = r.readLine()) != null) {
-                        total.append(line);
-                    }
-                    response = total.toString();
-                } catch(Exception e){
-                    Log.e(TAG, "Exception in getAllHearthstoneCards() - " + e.toString());
-                } finally {
-                    connection.disconnect();
-                }
-                return response;
-            }
-
-            @Override
-            protected void onPostExecute(String response) {
-                super.onPostExecute(response);
-                Log.d(TAG, "response = " + response);
-                Log.d(TAG, "response.length() is " + response.length());
-                processResponse(response);
-                populateInternalDatabase();
-            }
-
-        };
-        task.execute();
+    private void updateGridView(){
+        adapter.hearthstoneCards = hearthstoneCards;
+        adapter.notifyDataSetChanged();
     }
+
 
     private String getJSONArrayName(int position){
         switch(position){

@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -19,7 +18,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
-import enfieldacademy.hearthstonecompanion.data.HearthstoneDbHelper;
 import enfieldacademy.hearthstonecompanion.models.HearthstoneCard;
 import enfieldacademy.hearthstonecompanion.services.HearthstoneService;
 import enfieldacademy.hearthstonecompanion.R;
@@ -33,8 +31,6 @@ public class MainActivityFragment extends Fragment {
 
     private List<HearthstoneCard> hearthstoneCards;
 
-    SQLiteDatabase database;
-
     HearthstoneService service;
 
     public MainActivityFragment() {
@@ -46,16 +42,12 @@ public class MainActivityFragment extends Fragment {
 
         View parentView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        HearthstoneDbHelper dbHelper = new HearthstoneDbHelper(getActivity());
-
         hearthstoneCards = new ArrayList<>();
         CardAdapter adapter = new CardAdapter(hearthstoneCards);
         GridView cardView = (GridView) parentView.findViewById(R.id.exampleList);
         cardView.setAdapter(adapter);
 
-        service = new HearthstoneService(adapter);
-
-        dbHelper.createCardBase(hearthstoneCards);
+        service = new HearthstoneService(getActivity(), adapter);
 
         return parentView;
 
@@ -64,9 +56,6 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        database.close();
-
     }
 
     public class CardAdapter extends BaseAdapter {
