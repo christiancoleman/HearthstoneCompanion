@@ -3,18 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_width="150dp"
+    android:layout_height="175dp">
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:layout_width="130dp"
         android:layout_height="130dp"
         android:id="@+id/card_image"
-        fresco:placeholderImage="@drawable/classic_pack"/>
+        fresco:placeholderImage="@drawable/classic_pack"
+        fresco:actualImageScaleType="fitCenter"/>
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="130dp"
+        android:layout_height="25dp"
         android:id="@+id/card_name"
         android:layout_margin="10dp"
         android:textSize="@dimen/abc_text_size_small_material"
